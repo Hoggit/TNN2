@@ -1,7 +1,7 @@
 -- Static Ranges
 HOGGIT.spawners.red['EZ Range']:SetGroupRespawnOptions(10,60,300)
 HOGGIT.spawners.red['MED Range Targets']:SetGroupRespawnOptions(10,60,300)
-
+-- Static Ranges
 HOGGIT.spawners.red['EZ Range']:Spawn()
 HOGGIT.spawners.red['MED Range Targets']:Spawn()
 
@@ -65,17 +65,24 @@ function spawnRange(rangeList, grpTemplate)
   return grpTemplate:SpawnInZone(zone)
 end
 
+function spawnRangeResponse(difficulty, rangeGroup)
+  local response = difficulty .. " range spawned on your behalf\n"
+  local pos = HOGGIT.groupCoords(rangeGroup)
+  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos)
+  return response
+end
+
 function addRadioMenus(grp)
   local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Spawn Range", nil)
   HOGGIT.GroupCommand(grp:getID(), "Easy", spawnRangeBaseMenu, function()
     local easyGrp = HOGGIT.randomInList(EasyDynamicSpawns)
     local spawned_grp = spawnRange(EasyRangeZones, easyGrp)
-    HOGGIT.MessageToGroup(grp:getID(), "Easy range spawned on your behalf.", 10)
+    HOGGIT.MessageToGroup(grp:getID(), spawnRangeResponse("Easy", spawned_grp, grp), 10)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Medium", spawnRangeBaseMenu, function()
     local easyGrp = HOGGIT.randomInList(MediumDynamicSpawns)
     local spawned_grp = spawnRange(MediumRangeZones, easyGrp)
-    HOGGIT.MessageToGroup(grp:getID(), "Medium range spawned on your behalf.", 10)
+    HOGGIT.MessageToGroup(grp:getID(), spawnRangeResponse("Medium", spawned_grp, grp), 10)
   end)
 end
 
