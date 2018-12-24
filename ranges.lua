@@ -41,6 +41,14 @@ NavalEasyRangeZones = {
 }
 
 
+--Dynamic Spawn Templates
+EasyDynamicSpawns = {
+  "EasyDynamic-1"
+}
+
+MediumDynamicSpawns = {
+  "MediumDynamic-1"
+}
 --Spawns a given group template name in one of a given list of zones.
 --We also filter the zones to ensure nothing is currently in use there.
 function spawnRange(rangeList, grpTemplateName)
@@ -51,4 +59,31 @@ function spawnRange(rangeList, grpTemplateName)
   return spawner:spawnInZone(zone)
 end
 
+function addRadioMenus(grp)
+  local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Spawn Range", nil)
+  HOGGIT.GroupCommand(grp:getID(), "Easy", spawnRangeBaseMenu, function()
+    local easyGrp = HOGGIT.randomInList(EasyDynamicSpawns)
+    local grp = spawnRange(EasyRangeZones, easyGrp)
+    MessageToGroup(grp:getID(), "Easy range spawned on your behalf.", 10)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Medium", spawnRangeBaseMenu, function()
+    local easyGrp = HOGGIT.randomInList(MediumDynamicSpawns)
+    local grp = spawnRange(MediumRangeZones, easyGrp)
+    MessageToGroup(grp:getID(), "Medium range spawned on your behalf.", 10)
+  end)
+end
 
+local _radioBirthHandler = function(event)
+  if Event.id ~= world.event.S_EVENT_BIRTH then return end
+  if not Event.initiator then return end
+  if not Event.initiator.getGroup then return end
+  local grp = Event.initiator:getGroup()
+  if grp then
+    for i,u in ipairs(grp:getUnits()) do
+      if u:getPlayerName() and u:getPlayerName() ~= "" then
+        addRadioMenus(grp)
+      end
+    end
+  end
+end
+mist.addEventHandler(_radioBirthHandler)
