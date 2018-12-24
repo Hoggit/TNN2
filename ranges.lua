@@ -1,3 +1,7 @@
+-- Static Ranges
+HOGGIT.spawners.red['EZ Range']:Spawn()
+HOGGIT.spawners.red['MED Range Targets']:Spawn()
+
 RangesInUse = {}
 
 -- Dynamic Range Zone names
@@ -43,11 +47,11 @@ NavalEasyRangeZones = {
 
 --Dynamic Spawn Templates
 EasyDynamicSpawns = {
-  "EasyDynamic-1"
+  HOGGIT.spawners.red['EasyDynamic-1']
 }
 
 MediumDynamicSpawns = {
-  "MediumDynamic-1"
+  HOGGIT.spawners.red["MediumDynamic-1"]
 }
 --Spawns a given group template name in one of a given list of zones.
 --We also filter the zones to ensure nothing is currently in use there.
