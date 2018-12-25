@@ -95,7 +95,7 @@ end
 function spawnDynamicRange(rangeConfig, initiatingGroup)
     local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3])
     local smokeColor = smokeGroup(spawned_grp)
-    HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 10)
+    HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
 end
 
 function addRadioMenus(grp)
