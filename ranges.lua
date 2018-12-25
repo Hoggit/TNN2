@@ -1,4 +1,7 @@
 -- Static Ranges
+HOGGIT.spawners.red['EZ Range']:SetGroupRespawnOptions(10,60,300)
+HOGGIT.spawners.red['MED Range Targets']:SetGroupRespawnOptions(10,60,300)
+
 HOGGIT.spawners.red['EZ Range']:Spawn()
 HOGGIT.spawners.red['MED Range Targets']:Spawn()
 
