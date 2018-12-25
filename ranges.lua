@@ -56,33 +56,55 @@ EasyDynamicSpawns = {
 MediumDynamicSpawns = {
   HOGGIT.spawners.red["MediumDynamic-1"]
 }
+
+EasyDynamicRangeConfig = { "Easy", EasyRangeZones, EasyDynamicSpawns }
+MediumDynamicRangeConfig = { "Medium", MediumRangeZones, MediumDynamicSpawns }
+
+SmokeColors = {
+  trigger.smokeColor.Green,
+  trigger.smokeColor.Red,
+  trigger.smokeColor.White,
+  trigger.smokeColor.Orange,
+  trigger.smokeColor.Blue
+}
+
 --Spawns a given group template name in one of a given list of zones.
 --We also filter the zones to ensure nothing is currently in use there.
-function spawnRange(rangeList, grpTemplate)
+function spawnRange(rangeList, grpTemplates)
   local filteredRanges = HOGGIT.filterTable(rangeList, function(range) return not HOGGIT.listContains(RangesInUse, range) end)
   local zone = HOGGIT.randomInList(filteredRanges)
+  local grpTemplate = HOGGIT.randomInList(grpTemplates)
   table.insert(RangesInUse, zone)
   return grpTemplate:SpawnInZone(zone)
 end
 
-function spawnRangeResponse(difficulty, rangeGroup)
+function spawnRangeResponse(difficulty, rangeGroup, smokeColor)
   local response = difficulty .. " range spawned on your behalf\n"
   local pos = HOGGIT.groupCoords(rangeGroup)
   response = response .. "Target location: " .. HOGGIT.getLatLongString(pos)
+  response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(smokeColor)
   return response
+end
+
+function smokeGroup(grp)
+  local smokeColor = HOGGIT.randomInList(SmokeColors)
+  HOGGIT.smokeAtGroup(grp, smokeColor)
+  return smokeColor
+end
+
+function spawnDynamicRange(rangeConfig, initiatingGroup)
+    local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3])
+    local smokeColor = smokeGroup(spawned_grp)
+    HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 10)
 end
 
 function addRadioMenus(grp)
   local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Spawn Range", nil)
   HOGGIT.GroupCommand(grp:getID(), "Easy", spawnRangeBaseMenu, function()
-    local easyGrp = HOGGIT.randomInList(EasyDynamicSpawns)
-    local spawned_grp = spawnRange(EasyRangeZones, easyGrp)
-    HOGGIT.MessageToGroup(grp:getID(), spawnRangeResponse("Easy", spawned_grp, grp), 10)
+    spawnDynamicRange(EasyDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Medium", spawnRangeBaseMenu, function()
-    local easyGrp = HOGGIT.randomInList(MediumDynamicSpawns)
-    local spawned_grp = spawnRange(MediumRangeZones, easyGrp)
-    HOGGIT.MessageToGroup(grp:getID(), spawnRangeResponse("Medium", spawned_grp, grp), 10)
+    spawnDynamicRange(MediumDynamicRangeConfig, grp)
   end)
 end
 
