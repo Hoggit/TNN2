@@ -81,8 +81,8 @@ end
 function spawnRangeResponse(difficulty, rangeGroup, smokeColor)
   local response = difficulty .. " range spawned on your behalf\n"
   local pos = HOGGIT.groupCoords(rangeGroup)
-  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos)
-  response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(smokeColor)
+  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
+  response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(smokeColor) .. "\n"
   return response
 end
 
