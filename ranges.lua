@@ -6,6 +6,7 @@ HOGGIT.spawners.red['EZ Range']:Spawn()
 HOGGIT.spawners.red['MED Range Targets']:Spawn()
 
 RangesInUse = {}
+RangeDespawnTimer = 3600 -- 1 hour.
 
 -- Dynamic Range Zone names
 -- We use these lists of zone names to create spawns.
@@ -86,6 +87,7 @@ function spawnRangeResponse(difficulty, rangeGroup, smokeColor)
   local pos = HOGGIT.groupCoords(rangeGroup)
   response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
   response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(smokeColor) .. "\n"
+  response = response .. "This range will despawn in " .. RangeDespawnTimer .. " seconds.\n"
   return response
 end
 
@@ -137,7 +139,7 @@ function scheduleRangeDespawn(rangeGroup, messageGroup)
       clearRange(rangeGroup)
       HOGGIT.MessageToGroup(messageGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
     end
-  end, nil, timer.getTime() + 3600)
+  end, nil, timer.getTime() + RangeDespawnTimer)
 end
 
 function spawnDynamicRange(rangeConfig, initiatingGroup)
