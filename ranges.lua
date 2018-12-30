@@ -68,11 +68,12 @@ SmokeColors = {
   trigger.smokeColor.Blue
 }
 
---Spawns a given group template name in one of a given list of zones.
---We also filter the zones to ensure nothing is currently in use there.
-function spawnRange(rangeList, grpTemplates)
+function getRandomZoneForRange(rangeList)
   local filteredRanges = HOGGIT.filterTable(rangeList, function(range) return not HOGGIT.listContains(RangesInUse, range) end)
-  local zone = HOGGIT.randomInList(filteredRanges)
+  return HOGGIT.randomInList(filteredRanges)
+end
+
+function spawnRange(rangeList, grpTemplates, initiatingGroup)
   local grpTemplate = HOGGIT.randomInList(grpTemplates)
   table.insert(RangesInUse, zone)
   return grpTemplate:SpawnInZone(zone)
@@ -105,12 +106,44 @@ function smokeConfigForRange(rangeGroup, smokeColor)
   return smokeConfig
 end
 
+function find(t, f)
+  for k, v in ipairs(t) do
+    if f(v, k) then return v, k
+  end
+  return nil
+end
+
+function disableRangeSmokeRefresh(rangeGroup)
+  local gId = rangeGroup:getID()
+  local _, idx = find(TNN.SmokeRefresh, function(smoke)
+    return smoke["groupId"] == gId
+  end)
+  table.remove(TNN.SmokeRefresh, idx)
+end
+
+function clearRange(rangeGroup)
+  if rangeGroup ~= nil then
+    rangeGroup:destroy()
+    disableSmokeRefresh(rangeGroup)
+  end
+end
+
+function scheduleRangeDespawn(rangeGroup, messageGroup)
+    mist.scheduleFunction(function()
+      if rangeGroup ~= nil then
+        clearRange(rangeGroup)
+        HOGGIT.MessageToGroup(messageGroup, "Your range is been despawned after a 1 hour timeout", 10)
+      end
+    end, nil, timer.getTime() + 3600)
+end
+
 function spawnDynamicRange(rangeConfig, initiatingGroup)
     local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3])
     local smokeColor = smokeGroup(spawned_grp)
     local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
     setSmokeRefresh(smokeConfig)
     HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
+    scheduleRangeDespawn(spawned_grp, initiatingGroup)
 end
 
 function addRadioMenus(grp)
