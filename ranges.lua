@@ -146,13 +146,20 @@ function spawnDynamicRange(rangeConfig, initiatingGroup)
     scheduleRangeDespawn(spawned_grp, initiatingGroup)
 end
 
+function despawnRangeForGroup(group)
+  HOGGIT.MessageToGroup(group:getID(), "Not implemented yet...", 5)
+end
+
 function addRadioMenus(grp)
-  local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Spawn Range", nil)
-  HOGGIT.GroupCommand(grp:getID(), "Easy", spawnRangeBaseMenu, function()
+  local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Ranges", nil)
+  HOGGIT.GroupCommand(grp:getID(), "Spawn Easy", spawnRangeBaseMenu, function()
     spawnDynamicRange(EasyDynamicRangeConfig, grp)
   end)
-  HOGGIT.GroupCommand(grp:getID(), "Medium", spawnRangeBaseMenu, function()
+  HOGGIT.GroupCommand(grp:getID(), "Spawn Medium", spawnRangeBaseMenu, function()
     spawnDynamicRange(MediumDynamicRangeConfig, grp)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Despawn My Range", spawnRangeBaseMenu, function()
+    despawnRangeForGroup(grp)
   end)
 end
 
