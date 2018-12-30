@@ -92,9 +92,24 @@ function smokeGroup(grp)
   return smokeColor
 end
 
+function setSmokeRefresh(smokeConfig)
+  table.insert(TNN.SmokeRefresh, smokeConfig)
+end
+
+function smokeConfigForRange(rangeGroup, smokeColor)
+  if rangeGroup == nil then return nil end
+  local smokeConfig = {}
+  smokeConfig["position"] = HOGGIT.groupCoords(rangeGroup)
+  smokeConfig["color"] = smokeColor
+  smokeConfig["groupId"] = rangeGroup:getID()
+  return smokeConfig
+end
+
 function spawnDynamicRange(rangeConfig, initiatingGroup)
     local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3])
     local smokeColor = smokeGroup(spawned_grp)
+    local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
+    setSmokeRefresh(smokeConfig)
     HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
 end
 
