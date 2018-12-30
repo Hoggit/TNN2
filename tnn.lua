@@ -3,6 +3,10 @@ HOGGIT.SetupDefaultSpawners()
 TNN = {}
 TNN.SmokeRefresh = {}
 
+TNN.log = function(s)
+  env.info("TNN -- " .. s)
+end
+
 dofile(HOGGIT.script_base.. [[\TNN2\ranges.lua]])
 
 function refreshAllSmoke()
