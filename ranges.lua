@@ -126,28 +126,29 @@ end
 function clearRange(rangeGroup)
   if rangeGroup ~= nil then
     rangeGroup:destroy()
-    disableSmokeRefresh(rangeGroup)
+    disableRangeSmokeRefresh(rangeGroup)
   end
 end
 
 function scheduleRangeDespawn(rangeGroup, messageGroup)
   mist.scheduleFunction(function()
     if rangeGroup ~= nil then
+      TNN.log("Clearing range for group [" .. messageGroup:getName() .. "] due to timeout.")
       clearRange(rangeGroup)
-      HOGGIT.MessageToGroup(messageGroup, "Your range is been despawned after a 1 hour timeout", 10)
+      HOGGIT.MessageToGroup(messageGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
     end
   end, nil, timer.getTime() + 3600)
 end
 
 function spawnDynamicRange(rangeConfig, initiatingGroup)
-  TNN.log("RangeConfig -- " .. rangeConfig[1])
+  TNN.log("Spawning " .. rangeConfig[1] .. " range...")
   local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3], initiatingGroup)
-  TNN.log("Spawned Group")
   local smokeColor = smokeGroup(spawned_grp)
   local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
   setSmokeRefresh(smokeConfig)
   HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
   scheduleRangeDespawn(spawned_grp, initiatingGroup)
+  TNN.log("Done spawning " .. rangeConfig[1] .. " range")
 end
 
 function despawnRangeForGroup(group)
@@ -157,11 +158,10 @@ end
 function addRadioMenus(grp)
   local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Ranges", nil)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Easy", spawnRangeBaseMenu, function()
-    TNN.log("Spawning Easy range...")
     spawnDynamicRange(EasyDynamicRangeConfig, grp)
-    TNN.log("Done spawning Easy")
   end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Medium", spawnRangeBaseMenu, function()
+    TNN.log("Spawning Medium range...")
     spawnDynamicRange(MediumDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Despawn My Range", spawnRangeBaseMenu, function()
