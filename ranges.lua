@@ -156,7 +156,16 @@ function scheduleRangeDespawn(playerGroup)
   end, nil, timer.getTime() + RangeDespawnTimer)
 end
 
+function groupHasRange(grp)
+  local r = RangesInUse[grp:getName()]
+  return r ~= nil
+end
+
 function spawnDynamicRange(rangeConfig, initiatingGroup)
+  if groupHasRange(initiatingGroup) then
+    HOGGIT.MessageToGroup(initiatingGroup:getID(), "You already have a range assigned. You can't spawn another until you have either completed the last range or despawned it via the Radio Menu.", 5)
+    return
+  end
   TNN.log("Spawning " .. rangeConfig[1] .. " range...")
   local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3], initiatingGroup)
   local smokeColor = smokeGroup(spawned_grp)
