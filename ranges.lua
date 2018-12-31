@@ -70,7 +70,12 @@ SmokeColors = {
 }
 
 function getRandomZoneForRange(rangeList)
-  local filteredRanges = HOGGIT.filterTable(rangeList, function(range) return not HOGGIT.listContains(RangesInUse, range) end)
+  local filteredRanges = HOGGIT.filterTable(rangeList, function(range)
+    local idx = find(RangesInUse, function(r)
+      return r["zone"] == range
+    end)
+    return idx == nil
+  end)
   return HOGGIT.randomInList(filteredRanges)
 end
 
@@ -78,8 +83,12 @@ function spawnRange(rangeList, grpTemplates, initiatingGroup)
   local grpTemplate = HOGGIT.randomInList(grpTemplates)
   local zone = getRandomZoneForRange(rangeList)
   TNN.log("Group to be spawned is " .. grpTemplate .. ". In range " .. zone)
-  table.insert(RangesInUse, zone)
-  return HOGGIT.spawners.red[grpTemplate]:SpawnInZone(zone)
+  local spawnedGroup = HOGGIT.spawners.red[grpTemplate]:SpawnInZone(zone)
+  RangesInUse[initiatingGroup:getName()] = {
+    ["zone"] = zone,
+    ["group"] = spawnedGroup
+  }
+  return spawnedGroup
 end
 
 function spawnRangeResponse(difficulty, rangeGroup, smokeColor)
@@ -113,8 +122,8 @@ end
 function find(t, f)
   for k, v in ipairs(t) do
     if f(v, k) then return v, k end
-    return nil
   end
+  return nil
 end
 
 function disableRangeSmokeRefresh(rangeGroup)
@@ -125,19 +134,24 @@ function disableRangeSmokeRefresh(rangeGroup)
   table.remove(TNN.SmokeRefresh, idx)
 end
 
-function clearRange(rangeGroup)
+function clearRange(playerGroup)
+  local range = RangesInUse[playerGroup:getName()]
+  if range == nil then return end
+  local rangeGroup = range["group"]
   if rangeGroup ~= nil then
     rangeGroup:destroy()
     disableRangeSmokeRefresh(rangeGroup)
   end
+  RangesInUse[playerGroup:getName()] = nil
 end
 
-function scheduleRangeDespawn(rangeGroup, messageGroup)
+function scheduleRangeDespawn(playerGroup)
+  local rangeGroup = RangesInUse[playerGroup:getName()]["group"]
   mist.scheduleFunction(function()
     if rangeGroup ~= nil then
-      TNN.log("Clearing range for group [" .. messageGroup:getName() .. "] due to timeout.")
-      clearRange(rangeGroup)
-      HOGGIT.MessageToGroup(messageGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
+      TNN.log("Clearing range for group [" .. playerGroup:getName() .. "] due to timeout.")
+      clearRange(playerGroup)
+      HOGGIT.MessageToGroup(playerGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
     end
   end, nil, timer.getTime() + RangeDespawnTimer)
 end
@@ -154,7 +168,13 @@ function spawnDynamicRange(rangeConfig, initiatingGroup)
 end
 
 function despawnRangeForGroup(group)
-  HOGGIT.MessageToGroup(group:getID(), "Not implemented yet...", 5)
+  local range = RangesInUse[group:getName()]
+  if range == nil then
+    HOGGIT.MessageToGroup(group:getID(), "You don't have a range assigned to you. Try spawning one first.", 5)
+  else
+    clearRange(group)
+    HOGGIT.MessageToGroup(group:getID(), "Your range has been despawned.", 5)
+  end
 end
 
 function addRadioMenus(grp)
