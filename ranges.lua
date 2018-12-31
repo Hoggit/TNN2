@@ -86,7 +86,8 @@ function spawnRange(rangeList, grpTemplates, initiatingGroup)
   local spawnedGroup = HOGGIT.spawners.red[grpTemplate]:SpawnInZone(zone)
   RangesInUse[initiatingGroup:getName()] = {
     ["zone"] = zone,
-    ["group"] = spawnedGroup
+    ["group"] = spawnedGroup,
+    ["spawnTime"] = timer.getTime()
   }
   return spawnedGroup
 end
@@ -169,6 +170,7 @@ function spawnDynamicRange(rangeConfig, initiatingGroup)
   TNN.log("Spawning " .. rangeConfig[1] .. " range...")
   local spawned_grp = spawnRange(rangeConfig[2], rangeConfig[3], initiatingGroup)
   local smokeColor = smokeGroup(spawned_grp)
+  RangesInUse[initiatingGroup:getName()]["smokeColor"] = smokeColor
   local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
   setSmokeRefresh(smokeConfig)
   HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
@@ -186,13 +188,34 @@ function despawnRangeForGroup(group)
   end
 end
 
+function rangeInfoText(range)
+  local response = ""
+  local pos = HOGGIT.groupCoords(range["group"])
+  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
+  response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(range["smokeColor"]) .. "\n"
+  response = response .. "This range will despawn in FIXME seconds.\n"
+  return response
+end
+
+function sendGroupRangeInfo(grp)
+  local range = RangesInUse[grp:getName()]
+  if range == nil then
+    HOGGIT.MessageToGroup(grp:getID(), "You don't currently have a range assigned to you.", 5)
+  else
+    local text = rangeInfoText(range)
+    HOGGIT.MessageToGroup(grp:getID(), text, 30)
+  end
+end
+
 function addRadioMenus(grp)
   local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Ranges", nil)
+  HOGGIT.GroupCommand(grp:getID(), "My Range Info", spawnRangeBaseMenu, function()
+    sendGroupRangeInfo(grp)
+  end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Easy", spawnRangeBaseMenu, function()
     spawnDynamicRange(EasyDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Medium", spawnRangeBaseMenu, function()
-    TNN.log("Spawning Medium range...")
     spawnDynamicRange(MediumDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Despawn My Range", spawnRangeBaseMenu, function()
