@@ -122,7 +122,6 @@ function smokeConfigForRange(rangeGroup, smokeColor)
 end
 
 function find(t, f)
-  TNN.log("Finding...")
   for k, v in ipairs(t) do
     if f(v, k) then return v, k end
   end
@@ -233,20 +232,14 @@ function spawnJtacForGroup(grp)
     HOGGIT.MessageToGroup(grp:getID(), "You already have a JTAC unit for your range. You cannot spawn another one", 5)
     return
   end
-  TNN.log("Spawning JTAC for group")
   local jtacGroup = HOGGIT.spawners.blue["jtac"]
-  TNN.log("Got spawner")
   local rangeZone = rangeInfo["zone"]
-  TNN.log("Got Zone: " .. rangeZone)
   local spawnedGroup = jtacGroup:SpawnInZone(rangeZone)
-  TNN.log ("Spawned JTAC")
   local laserCode = table.remove(ctld.jtacGeneratedLaserCodes, 1)
   table.insert(ctld.jtacGeneratedLaserCodes, laserCode)
   ctld.JTACAutoLase(spawnedGroup:getName(), laserCode)
-  TNN.log("Codes Set")
   rangeInfo["jtacGroup"] = spawnedGroup
   RangesInUse[grp:getName()] = rangeInfo
-  TNN.log("Responding")
   HOGGIT.MessageToGroup(grp:getID(), "Your JTAC is active. Laser code " .. laserCode)
 end
 
