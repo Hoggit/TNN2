@@ -86,8 +86,9 @@ function spawnRange(rangeList, grpTemplates, initiatingGroup)
   local spawnedGroup = HOGGIT.spawners.red[grpTemplate]:SpawnInZone(zone)
   RangesInUse[initiatingGroup:getName()] = {
     ["zone"] = zone,
-    ["group"] = spawnedGroup,
-    ["spawnTime"] = timer.getTime()
+    ["group"] = spawnedGroup:getName(),
+    ["spawnTime"] = timer.getTime(),
+    ["owner"] = initiatingGroup
   }
   return spawnedGroup
 end
@@ -116,11 +117,12 @@ function smokeConfigForRange(rangeGroup, smokeColor)
   local smokeConfig = {}
   smokeConfig["position"] = HOGGIT.groupCoords(rangeGroup)
   smokeConfig["color"] = smokeColor
-  smokeConfig["groupId"] = rangeGroup:getID()
+  smokeConfig["groupName"] = rangeGroup:getName()
   return smokeConfig
 end
 
 function find(t, f)
+  TNN.log("Finding...")
   for k, v in ipairs(t) do
     if f(v, k) then return v, k end
   end
@@ -128,9 +130,8 @@ function find(t, f)
 end
 
 function disableRangeSmokeRefresh(rangeGroup)
-  local gId = rangeGroup:getID()
   local _, idx = find(TNN.SmokeRefresh, function(smoke)
-    return smoke["groupId"] == gId
+    return smoke["groupName"] == rangeGroup
   end)
   table.remove(TNN.SmokeRefresh, idx)
 end
@@ -138,17 +139,29 @@ end
 function clearRange(playerGroup)
   local range = RangesInUse[playerGroup:getName()]
   if range == nil then return end
-  local rangeGroup = range["group"]
-  if rangeGroup ~= nil then
-    rangeGroup:destroy()
-    disableRangeSmokeRefresh(rangeGroup)
+  log("Clearing range for group [" .. playerGroup:getName() .. "].")
+  local rangeGroupName = range["group"]
+  if rangeGroupName ~= nil then
+    local rangeGroup = Group.getByName(rangeGroupName)
+    if rangeGroup then
+      rangeGroup:destroy()
+      log("Destroying range group")
+    end
+    if range["jtacGroup"] then
+      log("Range had jtac. Destroying.")
+      range["jtacGroup"]:destroy()
+    end
+    disableRangeSmokeRefresh(rangeGroupName)
+    log("Disabled the auto-smoke refresh for the range too")
   end
   RangesInUse[playerGroup:getName()] = nil
+  log("Done clearing up the range")
 end
 
 function scheduleRangeDespawn(playerGroup)
-  local rangeGroup = RangesInUse[playerGroup:getName()]["group"]
+  local rangeGroupName = RangesInUse[playerGroup:getName()]["group"]
   mist.scheduleFunction(function()
+    local rangeGroup = Group.getByName(rangeGroupName)
     if rangeGroup ~= nil then
       TNN.log("Clearing range for group [" .. playerGroup:getName() .. "] due to timeout.")
       clearRange(playerGroup)
@@ -174,7 +187,7 @@ function spawnDynamicRange(rangeConfig, initiatingGroup)
   local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
   setSmokeRefresh(smokeConfig)
   HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
-  scheduleRangeDespawn(spawned_grp, initiatingGroup)
+  scheduleRangeDespawn(initiatingGroup)
   TNN.log("Done spawning " .. rangeConfig[1] .. " range")
 end
 
@@ -190,7 +203,7 @@ end
 
 function rangeInfoText(range)
   local response = ""
-  local pos = HOGGIT.groupCoords(range["group"])
+  local pos = HOGGIT.groupCoords(Group.getByName(range["group"]))
   response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
   response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(range["smokeColor"]) .. "\n"
   response = response .. "This range will despawn in FIXME seconds.\n"
@@ -208,24 +221,33 @@ function sendGroupRangeInfo(grp)
 end
 
 function spawnJtacForGroup(grp)
+  TNN.log("Spawning JTAC")
   local rangeInfo = RangesInUse[grp:getName()]
   if not rangeInfo then
-    HOGGIT.MessageToGroup(grp:getId(), "You don't have a range assigned for a JTAC. Spawn one first.", 5)
+    TNN.log("No group to spawn jtac for. exiting.")
+    HOGGIT.MessageToGroup(grp:getID(), "You don't have a range assigned for a JTAC. Spawn one first.", 5)
     return
   end
   if rangeInfo["jtacGroup"] then
-    HOGGIT.MessageToGroup(grp:getId(), "You already have a JTAC unit for your range. You cannot spawn another one", 5)
+    TNN.log("Already have a JTAC. skipping")
+    HOGGIT.MessageToGroup(grp:getID(), "You already have a JTAC unit for your range. You cannot spawn another one", 5)
     return
   end
+  TNN.log("Spawning JTAC for group")
   local jtacGroup = HOGGIT.spawners.blue["jtac"]
+  TNN.log("Got spawner")
   local rangeZone = rangeInfo["zone"]
-  local spawnedGroup = jtacGroup:SpawninZone(rangeZone)
+  TNN.log("Got Zone: " .. rangeZone)
+  local spawnedGroup = jtacGroup:SpawnInZone(rangeZone)
+  TNN.log ("Spawned JTAC")
   local laserCode = table.remove(ctld.jtacGeneratedLaserCodes, 1)
   table.insert(ctld.jtacGeneratedLaserCodes, laserCode)
   ctld.JTACAutoLase(spawnedGroup:getName(), laserCode)
+  TNN.log("Codes Set")
   rangeInfo["jtacGroup"] = spawnedGroup
   RangesInUse[grp:getName()] = rangeInfo
-  HOGGIT.MessageToGroup(grp:getId(), "Your JTAC is active. Laser code " .. laserCode)
+  TNN.log("Responding")
+  HOGGIT.MessageToGroup(grp:getID(), "Your JTAC is active. Laser code " .. laserCode)
 end
 
 function addRadioMenus(grp)
@@ -261,3 +283,25 @@ local _radioBirthHandler = function(event)
   end
 end
 mist.addEventHandler(_radioBirthHandler)
+
+function rangeDeathCheck()
+  local res, err = pcall(function()
+    for owner, range in pairs(RangesInUse) do
+      local rangeGroupName = range["group"]
+      if not HOGGIT.groupIsAlive(rangeGroupName) then
+        -- Group has been killed. Clear it up and inform the owning group.
+        mist.scheduleFunction(function()
+          local ownerGroup = range["owner"]
+          HOGGIT.MessageToGroup(ownerGroup:getID(), "Your range has been destroyed! Congratulations.")
+          clearRange(ownerGroup)
+        end, nil, timer.getTime() + 1)
+      end
+    end
+    return true
+  end)
+  if not res then
+    TNN.log("Error checking range groups for status: " .. err)
+  end
+  mist.scheduleFunction(rangeDeathCheck, nil, timer.getTime() + 5)
+end
+mist.scheduleFunction(rangeDeathCheck, nil, timer.getTime() + 5)
