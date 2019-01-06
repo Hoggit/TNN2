@@ -1,4 +1,5 @@
 Output "dist/tnn.lua"
 
+Main "ctld.lua"
 Main "tnn.lua"
 Main "ranges.lua"
