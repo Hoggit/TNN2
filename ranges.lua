@@ -40,6 +40,19 @@ MediumRangeZones = {
   "MEDIUM-12"
 }
 
+HardRangeZones = {
+  "HARD-1",
+  "HARD-2",
+  "HARD-3",
+  "HARD-4",
+  "HARD-5",
+  "HARD-6",
+  "HARD-7",
+  "HARD-8",
+  "HARD-9",
+  "HARD-10"
+}
+
 NavalEasyRangeZones = {
   "NAVAL-EASY-1",
   "NAVAL-EASY-2",
@@ -58,8 +71,13 @@ MediumDynamicSpawns = {
   "MediumDynamic-1"
 }
 
+HardDynamicSpawns = {
+  "HardDynamic-1"
+}
+
 EasyDynamicRangeConfig = { "Easy", EasyRangeZones, EasyDynamicSpawns }
 MediumDynamicRangeConfig = { "Medium", MediumRangeZones, MediumDynamicSpawns }
+HardDynamicRangeConfig = { "Hard", HardRangeZones, HardDynamicSpawns }
 
 SmokeColors = {
   trigger.smokeColor.Green,
@@ -253,6 +271,9 @@ function addRadioMenus(grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Medium", spawnRangeBaseMenu, function()
     spawnDynamicRange(MediumDynamicRangeConfig, grp)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Spawn Hard", spawnRangeBaseMenu, function()
+    spawnDynamicRange(HardDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Give me a JTAC", spawnRangeBaseMenu, function()
     spawnJtacForGroup(grp)
