@@ -150,32 +150,24 @@
 
  --pickupZones = { "Zone name or Ship Unit Name", "smoke color", "limit (-1 unlimited)", "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", flag number (optional) }
  ctld.pickupZones = {
-     { "LogiFARPCharlie", "green", -1, "yes", 0 },
-     { "LogiSochi", "green", -1, "yes", 0 },
-     { "LogiGudauta", "green", -1, "yes", 0 },
-     { "LogiMaykopSouth", "green", -1, "yes", 0 },
-     { "LogiMaykopNorth", "green", -1, "yes", 0 },
-     { "LogiFARPBravo", "green", -1, "yes", 0 },
-     { "LogiVody", "green", -1, "yes", 0 },
-     { "LogiFARPDelta", "green", -1, "yes", 0 },
+     { "pickzone1", "green", -1, "yes", 0 },
+     { "pickzone2", "green", -1, "yes", 0 },
+     { "pickzone3", "green", -1, "yes", 0 },
      { "pickzone4", "green", -1, "yes", 0 },
      { "pickzone5", "green", -1, "yes", 0 },
      { "pickzone6", "green", -1, "yes", 0 },
      { "pickzone7", "green", -1, "yes", 0 },
-     { "pickzone8", "green", -1, "yes", 0 },
-     { "pickzone9", "none", 5, "yes", 1 }, -- limits pickup zone 9 to 5 groups of soldiers or vehicles, only red can pick up
-     { "pickzone10", "none", 10, "yes", 2 },  -- limits pickup zone 10 to 10 groups of soldiers or vehicles, only blue can pick up
 
-     { "pickzone11", "blue", 20, "no", 2 },  -- limits pickup zone 11 to 20 groups of soldiers or vehicles, only blue can pick up. Zone starts inactive!
-     { "pickzone12", "red", 20, "no", 1 },  -- limits pickup zone 11 to 20 groups of soldiers or vehicles, only blue can pick up. Zone starts inactive!
-     { "pickzone13", "none", -1, "yes", 0 },
-     { "pickzone14", "none", -1, "yes", 0 },
-     { "pickzone15", "none", -1, "yes", 0 },
-     { "pickzone16", "none", -1, "yes", 0 },
-     { "pickzone17", "none", -1, "yes", 0 },
-     { "pickzone18", "none", -1, "yes", 0 },
-     { "pickzone19", "none", 5, "yes", 0 },
-     { "pickzone20", "none", 10, "yes", 0, 1000 }, -- optional extra flag number to store the current number of groups available in
+     { "pickzone8", "green", -1, "no", 0 },
+     { "pickzone9", "green", -1, "no", 0 },
+     { "pickzone10", "green", -1, "yes", 0 },
+     { "pickzone11", "green", -1, "yes", 0 },
+     { "pickzone12", "green", -1, "yes", 0 },
+     { "pickzone13", "green", -1, "yes", 0 },
+     { "pickzone14", "green", -1, "yes", 0 },
+     { "pickzone15", "green", -1, "yes", 0 },
+     { "pickzone16", "green", 5, "yes", 0 },
+     { "pickzone17", "green", 10, "yes", 0, 1000 }, -- optional extra flag number to store the current number of groups available in
 
      { "USA Carrier", "blue", 10, "yes", 0, 1001 }, -- instead of a Zone Name you can also use the UNIT NAME of a ship
  }
