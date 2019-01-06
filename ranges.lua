@@ -207,6 +207,27 @@ function sendGroupRangeInfo(grp)
   end
 end
 
+function spawnJtacForGroup(grp)
+  local rangeInfo = RangesInUse[grp:getName()]
+  if not rangeInfo then
+    HOGGIT.MessageToGroup(grp:getId(), "You don't have a range assigned for a JTAC. Spawn one first.", 5)
+    return
+  end
+  if rangeInfo["jtacGroup"] then
+    HOGGIT.MessageToGroup(grp:getId(), "You already have a JTAC unit for your range. You cannot spawn another one", 5)
+    return
+  end
+  local jtacGroup = HOGGIT.spawners.blue["jtac"]
+  local rangeZone = rangeInfo["zone"]
+  local spawnedGroup = jtacGroup:SpawninZone(rangeZone)
+  local laserCode = table.remove(ctld.jtacGeneratedLaserCodes, 1)
+  table.insert(ctld.jtacGeneratedLaserCodes, laserCode)
+  ctld.JTACAutoLase(spawnedGroup:getName(), laserCode)
+  rangeInfo["jtacGroup"] = spawnedGroup
+  RangesInUse[grp:getName()] = rangeInfo
+  HOGGIT.MessageToGroup(grp:getId(), "Your JTAC is active. Laser code " .. laserCode)
+end
+
 function addRadioMenus(grp)
   local spawnRangeBaseMenu = HOGGIT.GroupMenu(grp:getID(), "Ranges", nil)
   HOGGIT.GroupCommand(grp:getID(), "My Range Info", spawnRangeBaseMenu, function()
@@ -217,6 +238,9 @@ function addRadioMenus(grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Medium", spawnRangeBaseMenu, function()
     spawnDynamicRange(MediumDynamicRangeConfig, grp)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Give me a JTAC", spawnRangeBaseMenu, function()
+    spawnJtacForGroup(grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Despawn My Range", spawnRangeBaseMenu, function()
     despawnRangeForGroup(grp)
