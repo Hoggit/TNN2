@@ -1,9 +1,12 @@
 -- Static Ranges
-HOGGIT.spawners.red['EZ Range']:SetGroupRespawnOptions(10,60,300)
-HOGGIT.spawners.red['MED Range Targets']:SetGroupRespawnOptions(10,60,300)
+HOGGIT.spawners.red['EZ Range']:SetGroupRespawnOptions(10,60,600)
+HOGGIT.spawners.red['MED Range Targets']:SetGroupRespawnOptions(10,60,600)
+HOGGIT.spawners.red['Nalchik Defense']:SetGroupRespawnOptions(10,90,300)
+
 -- Static Ranges
 HOGGIT.spawners.red['EZ Range']:Spawn()
-HOGGIT.spawners.red['MED Range Targets']:Spawn()
+HOGGIT.spawners.red['HARD Range Targets']:Spawn()
+HOGGIT.spawners.red['Nalchik Defense']:Spawn()
 
 RangesInUse = {}
 RangeDespawnTimer = 3600 -- 1 hour.
@@ -61,6 +64,14 @@ NavalEasyRangeZones = {
   "NAVAL-EASY-5"
 }
 
+NavalHardRangeZones = {
+  "NAVAL-HARD-1",
+  "NAVAL-HARD-2",
+  "NAVAL-HARD-3",
+  "NAVAL-HARD-4",
+  "NAVAL-HARD-5"
+}
+
 
 --Dynamic Spawn Templates
 EasyDynamicSpawns = {
@@ -75,9 +86,19 @@ HardDynamicSpawns = {
   "HardDynamic-1"
 }
 
+NavalEasyDynamicSpawns = {
+  "EasyShipDynamic-1"
+}
+
+NavalHardDynamicSpawns = {
+  "HardShipDynamic-1"
+}
+
 EasyDynamicRangeConfig = { "Easy", EasyRangeZones, EasyDynamicSpawns }
 MediumDynamicRangeConfig = { "Medium", MediumRangeZones, MediumDynamicSpawns }
 HardDynamicRangeConfig = { "Hard", HardRangeZones, HardDynamicSpawns }
+EasyNavalDynamicRangeConfig = { "Easy Naval", NavalEasyRangeZones, NavalEasyDynamicSpawns }
+HardNavalDynamicRangeConfig = { "Hard Naval", NavalHardRangeZones, NavalHardDynamicSpawns }
 
 SmokeColors = {
   trigger.smokeColor.Green,
@@ -221,9 +242,10 @@ end
 function rangeInfoText(range)
   local response = ""
   local pos = HOGGIT.groupCoords(Group.getByName(range["group"]))
+  local spawnTime = range["spawnTime"]
   response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
   response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(range["smokeColor"]) .. "\n"
-  response = response .. "This range will despawn in FIXME seconds.\n"
+  response = response .. "This range will despawn in ".. spawnTime - timer.getTime() + RangeDespawnTimer .." seconds.\n"
   return response
 end
 
@@ -274,6 +296,12 @@ function addRadioMenus(grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Spawn Hard", spawnRangeBaseMenu, function()
     spawnDynamicRange(HardDynamicRangeConfig, grp)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Spawn Easy Naval", spawnRangeBaseMenu, function()
+    spawnDynamicRange(EasyNavalDynamicRangeConfig, grp)
+  end)
+  HOGGIT.GroupCommand(grp:getID(), "Spawn Hard Naval", spawnRangeBaseMenu, function()
+    spawnDynamicRange(HardNavalDynamicRangeConfig, grp)
   end)
   HOGGIT.GroupCommand(grp:getID(), "Give me a JTAC", spawnRangeBaseMenu, function()
     spawnJtacForGroup(grp)
