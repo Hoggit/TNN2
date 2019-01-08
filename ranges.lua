@@ -5,7 +5,7 @@ HOGGIT.spawners.red['Nalchik Defense']:SetGroupRespawnOptions(10,90,300)
 
 -- Static Ranges
 HOGGIT.spawners.red['EZ Range']:Spawn()
-HOGGIT.spawners.red['HARD Range Targets']:Spawn()
+HOGGIT.spawners.red['MED Range Targets']:Spawn()
 HOGGIT.spawners.red['Nalchik Defense']:Spawn()
 
 RangesInUse = {}
