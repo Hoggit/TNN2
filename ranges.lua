@@ -1,3 +1,16 @@
+-- AA Ranges
+HOGGIT.spawners.red['AA Drones Easy 1']:SetGroupRespawnOptions(10)
+HOGGIT.spawners.red['AA Drones Easy 2']:SetGroupRespawnOptions(10)
+HOGGIT.spawners.red['AA Drones Easy 3']:SetGroupRespawnOptions(10)
+HOGGIT.spawners.red['AA Drones Easy 4']:SetGroupRespawnOptions(10)
+HOGGIT.spawners.red['AA Drones Easy 5']:SetGroupRespawnOptions(10)
+
+HOGGIT.spawners.red['AA Drones Easy 1']:Spawn()
+HOGGIT.spawners.red['AA Drones Easy 2']:Spawn()
+HOGGIT.spawners.red['AA Drones Easy 3']:Spawn()
+HOGGIT.spawners.red['AA Drones Easy 4']:Spawn()
+HOGGIT.spawners.red['AA Drones Easy 5']:Spawn()
+
 -- Static Ranges
 HOGGIT.spawners.red['EZ Range']:SetGroupRespawnOptions(10,60,600)
 HOGGIT.spawners.red['MED Range Targets']:SetGroupRespawnOptions(10,60,600)
