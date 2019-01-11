@@ -272,6 +272,28 @@ function sendGroupRangeInfo(grp)
   end
 end
 
+function setGroupInvisible(grp)
+  SetGroupCommand(grp, "SetInvisible", true)
+end
+
+function setGroupImmortal(grp)
+  SetGroupCommand(grp, "SetImmortal", true)
+end
+
+function SetGroupCommand(grp, command, val)
+  if grp == nil then return nil end
+  TNN.log("Setting " .. command .. " to " .. tostring(val) .. " for group " .. grp:getName())
+  local ctlr = grp:getController()
+  if ctlr then
+    ctlr:setCommand({
+        id = command,
+        params = {
+          value = val
+        }
+      })
+  end
+end
+
 function spawnJtacForGroup(grp)
   TNN.log("Spawning JTAC")
   local rangeInfo = RangesInUse[grp:getName()]
@@ -288,6 +310,13 @@ function spawnJtacForGroup(grp)
   local jtacGroup = HOGGIT.spawners.blue["jtac"]
   local rangeZone = rangeInfo["zone"]
   local spawnedGroup = jtacGroup:SpawnInZone(rangeZone)
+  mist.scheduleFunction(function()
+    -- Grimes suggested doing this in a scheduled function
+    -- It apparently can cause crashes trying to set these if you don't.
+    setGroupInvisible(spawnedGroup)
+    setGroupImmortal(spawnedGroup)
+
+  end, {}, timer.getTime() + 1)
   local laserCode = table.remove(ctld.jtacGeneratedLaserCodes, 1)
   table.insert(ctld.jtacGeneratedLaserCodes, laserCode)
   ctld.JTACAutoLase(spawnedGroup:getName(), laserCode)
@@ -343,7 +372,7 @@ function rangeDeathCheck()
   local res, err = pcall(function()
     for owner, range in pairs(RangesInUse) do
       local rangeGroupName = range["group"]
-      if not HOGGIT.groupIsAlive(rangeGroupName) then
+      if not HOGGIT.GroupIsAlive(rangeGroupName) then
         -- Group has been killed. Clear it up and inform the owning group.
         mist.scheduleFunction(function()
           local ownerGroup = range["owner"]
