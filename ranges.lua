@@ -145,15 +145,6 @@ function spawnRange(rangeList, grpTemplates, initiatingGroup)
   return spawnedGroup
 end
 
-function spawnRangeResponse(difficulty, rangeGroup, smokeColor)
-  local response = difficulty .. " range spawned on your behalf\n"
-  local pos = HOGGIT.groupCoords(rangeGroup)
-  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
-  response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(smokeColor) .. "\n"
-  response = response .. "This range will despawn in " .. RangeDespawnTimer .. " seconds.\n"
-  return response
-end
-
 function smokeGroup(grp)
   local smokeColor = HOGGIT.randomInList(SmokeColors)
   HOGGIT.smokeAtGroup(grp, smokeColor)
@@ -237,7 +228,11 @@ function spawnDynamicRange(rangeConfig, initiatingGroup)
   RangesInUse[initiatingGroup:getName()]["smokeColor"] = smokeColor
   local smokeConfig = smokeConfigForRange(spawned_grp, smokeColor)
   setSmokeRefresh(smokeConfig)
-  HOGGIT.MessageToGroup(initiatingGroup:getID(), spawnRangeResponse(rangeConfig[1], spawned_grp, smokeColor), 30)
+
+  local response = rangeConfig[1] .. " range spawned on your behalf.\n"
+  response = response .. rangeInfoText(initiatingGroup, RangesInUse[initiatingGroup:getName()])
+  HOGGIT.MessageToGroup(initiatingGroup:getID(), response, 30)
+
   scheduleRangeDespawn(initiatingGroup)
   TNN.log("Done spawning " .. rangeConfig[1] .. " range")
 end
@@ -252,11 +247,15 @@ function despawnRangeForGroup(group)
   end
 end
 
-function rangeInfoText(range)
+function positionString(grp, pos)
+  return HOGGIT.CoordsForGroup(grp, pos)
+end
+
+function rangeInfoText(grp, range)
   local response = ""
   local pos = HOGGIT.groupCoords(Group.getByName(range["group"]))
   local spawnTime = range["spawnTime"]
-  response = response .. "Target location: " .. HOGGIT.getLatLongString(pos) .. "\n"
+  response = response .. "Target location: " .. HOGGIT.CoordsForGroup(grp, pos) .. "\n"
   response = response .. "Smoke Color: " .. HOGGIT.getSmokeName(range["smokeColor"]) .. "\n"
   response = response .. "This range will despawn in ".. spawnTime - timer.getTime() + RangeDespawnTimer .." seconds.\n"
   return response
@@ -267,7 +266,7 @@ function sendGroupRangeInfo(grp)
   if range == nil then
     HOGGIT.MessageToGroup(grp:getID(), "You don't currently have a range assigned to you.", 5)
   else
-    local text = rangeInfoText(range)
+    local text = rangeInfoText(grp, range)
     HOGGIT.MessageToGroup(grp:getID(), text, 30)
   end
 end
