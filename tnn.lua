@@ -30,4 +30,10 @@ else
   -- This may double up some smokes for a single cycle, if this function runs within 5 minutes
   -- of smoke being manually placed at a location.
   refreshAllSmoke()
+
+  --Set up the tankers as zombies.
+  HOGGIT.spawners.blue['Shell 8-1']:SetGroupRespawnOptions(5)
+  HOGGIT.spawners.blue['Shell 8-1']:Spawn()
+  HOGGIT.spawners.blue['Texaco 6-1']:SetGroupRespawnOptions(5)
+  HOGGIT.spawners.blue['Texaco 6-1']:Spawn()
 end
