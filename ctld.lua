@@ -4883,7 +4883,7 @@
                  --   env.info("adding command for "..index)
                  if ctld.jtacRadioAdded[tostring(_groupId)] == nil then
                      -- env.info("about command for "..index)
-                     missionCommands.addCommandForGroup(_groupId, "JTAC Status", nil, ctld.getJTACStatus, { _playerUnit:getName() })
+                     --missionCommands.addCommandForGroup(_groupId, "JTAC Status", nil, ctld.getJTACStatus, { _playerUnit:getName() })
                      ctld.jtacRadioAdded[tostring(_groupId)] = true
                      -- env.info("Added command for " .. index)
                  end
