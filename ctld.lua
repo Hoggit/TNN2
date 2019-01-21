@@ -124,7 +124,7 @@
  ctld.JTAC_smokeColour_RED = 4 -- RED side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
  ctld.JTAC_smokeColour_BLUE = 1 -- BLUE side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
 
- ctld.JTAC_jtacStatusF10 = true -- enables F10 JTAC Status menu
+ ctld.JTAC_jtacStatusF10 = false -- enables F10 JTAC Status menu
 
  ctld.JTAC_location = true -- shows location of target in JTAC message
 
@@ -5064,7 +5064,7 @@
              -- store current target for easy lookup
              ctld.jtacCurrentTargets[_jtacGroupName] = { name = _enemyUnit:getName(), unitType = _enemyUnit:getTypeName(), unitId = _enemyUnit:getID() }
 
-             ctld.notifyCoalition(_jtacGroupName .. " lasing new target " .. _enemyUnit:getTypeName() .. '. CODE: ' .. _laserCode .. ctld.getPositionString(_enemyUnit), 10, _jtacUnit:getCoalition())
+             --ctld.notifyCoalition(_jtacGroupName .. " lasing new target " .. _enemyUnit:getTypeName() .. '. CODE: ' .. _laserCode .. ctld.getPositionString(_enemyUnit), 10, _jtacUnit:getCoalition())
 
              -- create smoke
              if _smoke == true then
