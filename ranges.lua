@@ -140,7 +140,7 @@ function spawnRange(rangeList, grpTemplates, initiatingGroup)
     ["zone"] = zone,
     ["group"] = spawnedGroup:getName(),
     ["spawnTime"] = timer.getTime(),
-    ["owner"] = initiatingGroup
+    ["owner"] = initiatingGroup:getName()
   }
   return spawnedGroup
 end
@@ -178,36 +178,41 @@ function disableRangeSmokeRefresh(rangeGroup)
   table.remove(TNN.SmokeRefresh, idx)
 end
 
-function clearRange(playerGroup)
-  local range = RangesInUse[playerGroup:getName()]
+function clearRange(playerGroupName)
+  local range = RangesInUse[playerGroupName]
   if range == nil then return end
-  log("Clearing range for group [" .. playerGroup:getName() .. "].")
+  TNN.log("Clearing range for group [" .. playerGroupName .. "].")
   local rangeGroupName = range["group"]
   if rangeGroupName ~= nil then
     local rangeGroup = Group.getByName(rangeGroupName)
     if rangeGroup then
       rangeGroup:destroy()
-      log("Destroying range group")
+      TNN.log("Destroying range group")
     end
     if range["jtacGroup"] then
-      log("Range had jtac. Destroying.")
+      TNN.log("Range had jtac. Destroying.")
       range["jtacGroup"]:destroy()
     end
     disableRangeSmokeRefresh(rangeGroupName)
-    log("Disabled the auto-smoke refresh for the range too")
+    TNN.log("Disabled the auto-smoke refresh for the range too")
   end
-  RangesInUse[playerGroup:getName()] = nil
-  log("Done clearing up the range")
+  RangesInUse[playerGroupName] = nil
+  TNN.log("Done clearing up the range")
 end
 
 function scheduleRangeDespawn(playerGroup)
-  local rangeGroupName = RangesInUse[playerGroup:getName()]["group"]
+  local playerGroupName = playerGroup:getName()
+  local rangeGroupName = RangesInUse[playerGroupName]["group"]
   mist.scheduleFunction(function()
     local rangeGroup = Group.getByName(rangeGroupName)
     if rangeGroup ~= nil then
-      TNN.log("Clearing range for group [" .. playerGroup:getName() .. "] due to timeout.")
-      clearRange(playerGroup)
-      HOGGIT.MessageToGroup(playerGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
+      TNN.log("Clearing range for group [" .. playerGroupName .. "] due to timeout.")
+      clearRange(playerGroupName)
+      -- after an hour delay, player may no longer be in the same group or playing
+      local currentPlayerGroup = Group.getByName(playerGroupName)
+      if currentPlayerGroup and currentPlayerGroup:isExist() then
+        HOGGIT.MessageToGroup(currentPlayerGroup:getID(), "Your range is been despawned after a 1 hour timeout", 10)
+      end
     end
   end, nil, timer.getTime() + RangeDespawnTimer)
 end
@@ -244,6 +249,13 @@ function despawnRangeForGroup(group)
   else
     clearRange(group)
     HOGGIT.MessageToGroup(group:getID(), "Your range has been despawned.", 5)
+  end
+end
+
+function destroyAllRanges(group)
+  for owner, range in pairs(RangesInUse) do
+    TNN.log("destroying range for [" .. owner .. "]: [" .. range["group"] .. "]")
+    Group.getByName(range["group"]):destroy()
   end
 end
 
@@ -350,6 +362,9 @@ function addRadioMenus(grp)
   HOGGIT.GroupCommand(grp:getID(), "Despawn My Range", spawnRangeBaseMenu, function()
     despawnRangeForGroup(grp)
   end)
+  --HOGGIT.GroupCommand(grp:getID(), "Despawn All Ranges", spawnRangeBaseMenu, function()
+  --  destroyAllRanges()
+  --end)
 end
 
 local _radioBirthHandler = function(event)
@@ -369,14 +384,16 @@ mist.addEventHandler(_radioBirthHandler)
 
 function rangeDeathCheck()
   local res, err = pcall(function()
-    for owner, range in pairs(RangesInUse) do
+    for ownerName, range in pairs(RangesInUse) do
       local rangeGroupName = range["group"]
       if not HOGGIT.GroupIsAlive(rangeGroupName) then
         -- Group has been killed. Clear it up and inform the owning group.
         mist.scheduleFunction(function()
-          local ownerGroup = range["owner"]
-          HOGGIT.MessageToGroup(ownerGroup:getID(), "Your range has been destroyed! Congratulations.")
-          clearRange(ownerGroup)
+          local ownerGroup = Group.getByName(ownerName)
+          clearRange(ownerName)
+          if ownerGroup and ownerGroup:isExist() then
+            HOGGIT.MessageToGroup(ownerGroup:getID(), "Your range has been destroyed! Congratulations.")
+          end
         end, nil, timer.getTime() + 1)
       end
     end
